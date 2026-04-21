@@ -108,8 +108,4 @@ http://localhost:5000
 
 Pranita
 
----
 
-## 📄 License
-
-This project is open-source and available under the MIT License.
