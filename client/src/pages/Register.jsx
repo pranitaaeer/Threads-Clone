@@ -9,7 +9,9 @@ import { useEffect, useState } from "react";
 import { useLoginMutation, useSigninMutation } from "../redux/service";
 import { Bounce, toast } from "react-toastify";
 import Loading from "../components/common/Loading";
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 const Register = () => {
   const _700 = useMediaQuery("(min-width:700px)");
 
@@ -20,25 +22,22 @@ const Register = () => {
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  
+  // Dark mode state from Redux
+  const { darkMode } = useSelector((state) => state.service);
+
   const toggleLogin = () => {
     setLogin((pre) => !pre);
   };
 
   const handleLogin = async () => {
-    const data = {
-      email,
-      password,
-    };
+    const data = { email, password };
     await loginUser(data);
   };
 
   const handleRegister = async () => {
-    const data = {
-      userName,
-      email,
-      password,
-    };
+    const data = { userName, email, password };
     await signinUser(data);
   };
 
@@ -47,11 +46,7 @@ const Register = () => {
       toast.success(signinUserData.data.msg, {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
+        theme: darkMode ? "dark" : "colored", // Theme aware toast
         transition: Bounce,
       });
     }
@@ -59,53 +54,52 @@ const Register = () => {
       toast.error(signinUserData.error.data.msg, {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
+        theme: darkMode ? "dark" : "colored",
         transition: Bounce,
       });
     }
-  }, [signinUserData.isSuccess, signinUserData.isError]);
+  }, [signinUserData.isSuccess, signinUserData.isError, darkMode]);
 
   useEffect(() => {
     if (loginUserData.isSuccess) {
       toast.success(loginUserData.data.msg, {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
+        theme: darkMode ? "dark" : "colored",
         transition: Bounce,
       });
-      navigate("/")
+      navigate("/");
     }
     if (loginUserData.isError) {
       toast.error(loginUserData.error.data.msg, {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
+        theme: darkMode ? "dark" : "colored",
         transition: Bounce,
       });
-      
-
     }
-  }, [loginUserData.isSuccess, loginUserData.isError]);
+  }, [loginUserData.isSuccess, loginUserData.isError, darkMode]);
 
   if (signinUserData.isLoading || loginUserData.isLoading) {
     return (
-      <Stack height={"90vh"} alignItems={"center"} justifyContent={"center"}>
+      <Stack height={"90vh"} alignItems={"center"} justifyContent={"center"} bgcolor={darkMode ? "#121212" : "white"}>
         <Loading />
       </Stack>
     );
   }
+
+  // Common styles for TextFields in Dark Mode
+  const inputStyles = {
+    "& .MuiOutlinedInput-root": {
+      color: darkMode ? "white" : "inherit",
+      "& fieldset": { borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.23)" },
+      "&:hover fieldset": { borderColor: darkMode ? "white" : "rgba(0,0,0,0.87)" },
+    },
+    "& .MuiInputBase-input::placeholder": {
+      color: darkMode ? "rgba(255,255,255,0.7)" : "inherit",
+      opacity: 1,
+    },
+  };
 
   return (
     <>
@@ -115,15 +109,15 @@ const Register = () => {
         flexDirection={"row"}
         justifyContent={"center"}
         alignItems={"center"}
-        sx={
-          _700
-            ? {
-                backgroundImage: 'url("/register-bg.webp")',
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "100% 600px",
-              }
-            : null
-        }
+        sx={{
+          bgcolor: darkMode ? "#121212" : "white", // Background color change
+          transition: "background-color 0.3s ease",
+          ...(_700 && {
+            backgroundImage: 'url("/register-bg.webp")',
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "100% 600px",
+          })
+        }}
       >
         <Stack
           flexDirection={"column"}
@@ -136,32 +130,39 @@ const Register = () => {
             fontSize={_700 ? "1.5rem" : "1rem"}
             fontWeight={"bold"}
             alignSelf={"center"}
+            color={darkMode ? "white" : "black"} // Text color change
           >
             {login ? " Login with email" : " Register with email"}
           </Typography>
+
           {login ? null : (
             <TextField
               variant="outlined"
               placeholder="Enter your userName..."
               onChange={(e) => setUserName(e.target.value)}
+              sx={inputStyles}
             />
           )}
           <TextField
             variant="outlined"
             placeholder="Enter your Email..."
             onChange={(e) => setEmail(e.target.value)}
+            sx={inputStyles}
           />
           <TextField
             variant="outlined"
+            type="password"
             placeholder="Enter your Password..."
             onChange={(e) => setPassword(e.target.value)}
+            sx={inputStyles}
           />
+
           <Button
             size="large"
             sx={{
               width: "100%",
               height: 52,
-              bgcolor: "green",
+              bgcolor: darkMode ? "#1db954" : "green", // Slightly different green for dark mode
               color: "white",
               fontSize: "1rem",
               ":hover": {
@@ -173,14 +174,19 @@ const Register = () => {
           >
             {login ? "Login" : "  Sign Up"}
           </Button>
+
           <Typography
             variant="subtitle2"
             fontSize={_700 ? "1.3rem" : "1rem"}
             alignSelf={"center"}
+            color={darkMode ? "rgba(255,255,255,0.7)" : "black"} // Subtitle color change
           >
-            {login ? "Don`t have an account ?" : " Already have an accout ?"}
-            <span className="login-link" onClick={toggleLogin}>
-              {" "}
+            {login ? "Don't have an account ?" : " Already have an account ?"}
+            <span 
+              className="login-link" 
+              onClick={toggleLogin}
+              style={{ color: darkMode ? "#4dabf5" : "blue", cursor: "pointer", marginLeft: "5px" }}
+            >
               {login ? "Sign up" : "Login"}
             </span>
           </Typography>

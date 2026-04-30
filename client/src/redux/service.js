@@ -183,7 +183,7 @@ export const serviceApi = createApi({
       ],
     }),
     chatwithai:builder.mutation({
-      query:(message)=>({
+      query:({message})=>({
          url:'/chat',
          method:"POST",
          body:{message}
