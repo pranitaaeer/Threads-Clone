@@ -1,16 +1,15 @@
 import { Menu, MenuItem } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { toggleColorMode, toggleMainMenu } from "../../redux/slice";
+import { Link, useNavigate } from "react-router-dom";
+import { toggleColorMode, toggleMainMenu, clearAuth } from "../../redux/slice";
 import { useLogoutMeMutation } from "../../redux/service";
 import { useEffect } from "react";
 import { Bounce, toast } from "react-toastify";
 
 const MainMenu = () => {
   const { anchorE1, myInfo } = useSelector((state) => state.service);
-
+  const navigate = useNavigate();
   const [logoutMe, logoutMeData] = useLogoutMeMutation();
-
   const dispatch = useDispatch();
 
   const handleClose = () => {
@@ -29,6 +28,12 @@ const MainMenu = () => {
 
   useEffect(() => {
     if (logoutMeData.isSuccess) {
+      // Clear Redux state
+      dispatch(clearAuth());
+      
+      // Optionally clear localStorage if you store token there
+      localStorage.removeItem('token');
+      
       toast.warning(logoutMeData.data.msg, {
         position: "top-center",
         autoClose: 2500,
@@ -39,9 +44,13 @@ const MainMenu = () => {
         theme: "colored",
         transition: Bounce,
       });
+      
+      // Navigate to login after clearing state
+      navigate("/login");
     }
+    
     if (logoutMeData.isError) {
-      toast.error(logoutMeData.error.data.msg, {
+      toast.error(logoutMeData.error?.data?.msg || "Logout failed", {
         position: "top-center",
         autoClose: 2500,
         hideProgressBar: false,
@@ -52,7 +61,7 @@ const MainMenu = () => {
         transition: Bounce,
       });
     }
-  }, [logoutMeData.isSuccess, logoutMeData.isError]);
+  }, [logoutMeData.isSuccess, logoutMeData.isError, dispatch, navigate]);
 
   return (
     <>

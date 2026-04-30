@@ -81,6 +81,7 @@ const Register = () => {
         theme: "colored",
         transition: Bounce,
       });
+      navigate("/")
     }
     if (loginUserData.isError) {
       toast.error(loginUserData.error.data.msg, {
@@ -93,7 +94,7 @@ const Register = () => {
         theme: "colored",
         transition: Bounce,
       });
-      navigate("/")
+      
 
     }
   }, [loginUserData.isSuccess, loginUserData.isError]);

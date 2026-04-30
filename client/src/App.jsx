@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { useSelector } from "react-redux";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Error from "./pages/Error";
 import Home from "./pages/Protected/Home";
 import ProfileLayout from "./pages/Protected/profile/ProfileLayout";
@@ -15,40 +15,48 @@ import { useMyInfoQuery } from "./redux/service";
 import ChatBot from "./components/home/chatbot";
 
 const App = () => {
-  const { darkMode } = useSelector((state) => state.service);
-  const { data, isError } = useMyInfoQuery();
+  const { darkMode, myInfo } = useSelector((state) => state.service);
+  
+  // Only fetch if we don't have myInfo in Redux
+  const { isLoading } = useMyInfoQuery(undefined, {
+    skip: !!myInfo // Skip if we already have user data
+  });
 
-  if (isError || !data) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route exact path="/*" element={<Register />} />
-        </Routes>
-      </BrowserRouter>
-    );
+  // Check authentication from Redux state, not from query
+  const isAuthenticated = !!myInfo;
+
+  // Show loading state if needed
+  if (isLoading && !myInfo) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <>
-      <Box minHeight={"100vh"} className={darkMode ? "mode" : ""}>
-        <BrowserRouter>
-            <ChatBot />
-          <Routes>
-            <Route exact path="/" element={<ProtectedLayout />}>
-              <Route exact path="" element={<Home />} />
-              <Route exact path="post/:id" element={<SinglePost />} />
-              <Route exact path="search" element={<Search />} />
-              <Route exact path="profile" element={<ProfileLayout />}>
-                <Route exact path="threads/:id" element={<Threads />} />
-                <Route exact path="replies/:id" element={<Replies />} />
-                <Route exact path="reposts/:id" element={<Repost />} />
-              </Route>
+    <Box minHeight={"100vh"} className={darkMode ? "mode" : ""}>
+      <BrowserRouter>
+        <ChatBot />
+        <Routes>
+          {/* Public routes - NO navbar */}
+          <Route path="/login" element={<Register />} />
+          
+          {/* Protected routes - WITH navbar */}
+          <Route path="/" element={
+            isAuthenticated ? <ProtectedLayout /> : <Navigate to="/login" replace />
+          }>
+            <Route index element={<Home />} />
+            <Route path="post/:id" element={<SinglePost />} />
+            <Route path="search" element={<Search />} />
+            <Route path="profile" element={<ProfileLayout />}>
+              <Route path="threads/:id" element={<Threads />} />
+              <Route path="replies/:id" element={<Replies />} />
+              <Route path="reposts/:id" element={<Repost />} />
             </Route>
-            <Route exact path="*" element={<Error />} />
-          </Routes>
-        </BrowserRouter>
-      </Box>
-    </>
+          </Route>
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Error />} />
+        </Routes>
+      </BrowserRouter>
+    </Box>
   );
 };
 

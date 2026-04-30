@@ -81,7 +81,15 @@ export const serviceSlice = createSlice({
     addToSearchedUsers: (state, action) => {
       state.searchedUsers = action.payload;
     },
+    clearAuth: (state) => {
+      state.myInfo = null;
+      state.user = {};
+      state.allPosts = [];
+      state.postId = null;
+      state.searchedUsers = [];
+    },
   },
+   
 });
 
 export const {
@@ -97,6 +105,7 @@ export const {
   addToAllPost,
   deleteThePost,
   addToSearchedUsers,
+  clearAuth
 } = serviceSlice.actions;
 
 export default serviceSlice.reducer;
