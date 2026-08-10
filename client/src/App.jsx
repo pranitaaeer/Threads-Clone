@@ -11,14 +11,14 @@ import ProtectedLayout from "./pages/Protected/ProtectedLayout";
 import Search from "./pages/Protected/Search";
 import Register from "./pages/Register";
 import SinglePost from "./pages/Protected/SinglePost";
-import { useMyInfoQuery } from "./redux/service";
+import { useLazyMyInfoQuery } from "./redux/service";
 import ChatBot from "./components/home/chatbot";
 
 const App = () => {
   const { darkMode, myInfo } = useSelector((state) => state.service);
   
   // Only fetch if we don't have myInfo in Redux
-  const { isLoading } = useMyInfoQuery(undefined, {
+  const { isLoading } = useLazyMyInfoQuery(undefined, {
     skip: !!myInfo // Skip if we already have user data
   });
 

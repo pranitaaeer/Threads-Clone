@@ -6,24 +6,27 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useLoginMutation, useSigninMutation } from "../redux/service";
+import { useLoginMutation, useSigninMutation, useLazyMyInfoQuery, serviceApi } from "../redux/service";
+import { useDispatch, useSelector } from "react-redux";
+import { clearAuth } from "../redux/slice";
 import { Bounce, toast } from "react-toastify";
 import Loading from "../components/common/Loading";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 const Register = () => {
   const _700 = useMediaQuery("(min-width:700px)");
+  const dispatch = useDispatch();
 
   const [signinUser, signinUserData] = useSigninMutation();
   const [loginUser, loginUserData] = useLoginMutation();
+  const [getMyInfo] = useLazyMyInfoQuery();
 
   const [login, setLogin] = useState(false);
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  
+
   // Dark mode state from Redux
   const { darkMode } = useSelector((state) => state.service);
 
@@ -31,10 +34,42 @@ const Register = () => {
     setLogin((pre) => !pre);
   };
 
+  // const handleLogin = async () => {
+  //   const data = { email, password };
+  //   await loginUser(data);
+  // };
+
   const handleLogin = async () => {
+  try {
     const data = { email, password };
-    await loginUser(data);
-  };
+
+    dispatch(clearAuth());
+    dispatch(serviceApi.util.resetApiState());
+
+    const loginResponse = await loginUser(data).unwrap();
+
+    await getMyInfo().unwrap();
+
+    toast.success(loginResponse.msg, {
+      position: "top-center",
+      autoClose: 2500,
+      theme: darkMode ? "dark" : "colored",
+      transition: Bounce,
+    });
+
+    navigate("/");
+  } catch (error) {
+    toast.error(
+      error?.data?.msg || "Login failed",
+      {
+        position: "top-center",
+        autoClose: 2500,
+        theme: darkMode ? "dark" : "colored",
+        transition: Bounce,
+      }
+    );
+  }
+};
 
   const handleRegister = async () => {
     const data = { userName, email, password };
@@ -49,6 +84,7 @@ const Register = () => {
         theme: darkMode ? "dark" : "colored", // Theme aware toast
         transition: Bounce,
       });
+      setLogin(true);
     }
     if (signinUserData.isError) {
       toast.error(signinUserData.error.data.msg, {
@@ -60,25 +96,25 @@ const Register = () => {
     }
   }, [signinUserData.isSuccess, signinUserData.isError, darkMode]);
 
-  useEffect(() => {
-    if (loginUserData.isSuccess) {
-      toast.success(loginUserData.data.msg, {
-        position: "top-center",
-        autoClose: 2500,
-        theme: darkMode ? "dark" : "colored",
-        transition: Bounce,
-      });
-      navigate("/");
-    }
-    if (loginUserData.isError) {
-      toast.error(loginUserData.error.data.msg, {
-        position: "top-center",
-        autoClose: 2500,
-        theme: darkMode ? "dark" : "colored",
-        transition: Bounce,
-      });
-    }
-  }, [loginUserData.isSuccess, loginUserData.isError, darkMode]);
+  // useEffect(() => {
+  //   if (loginUserData.isSuccess) {
+  //     toast.success(loginUserData.data.msg, {
+  //       position: "top-center",
+  //       autoClose: 2500,
+  //       theme: darkMode ? "dark" : "colored",
+  //       transition: Bounce,
+  //     });
+  //     navigate("/");
+  //   }
+  //   if (loginUserData.isError) {
+  //     toast.error(loginUserData.error.data.msg, {
+  //       position: "top-center",
+  //       autoClose: 2500,
+  //       theme: darkMode ? "dark" : "colored",
+  //       transition: Bounce,
+  //     });
+  //   }
+  // }, [loginUserData.isSuccess, loginUserData.isError, darkMode]);
 
   if (signinUserData.isLoading || loginUserData.isLoading) {
     return (
@@ -182,8 +218,8 @@ const Register = () => {
             color={darkMode ? "rgba(255,255,255,0.7)" : "black"} // Subtitle color change
           >
             {login ? "Don't have an account ?" : " Already have an account ?"}
-            <span 
-              className="login-link" 
+            <span
+              className="login-link"
               onClick={toggleLogin}
               style={{ color: darkMode ? "#4dabf5" : "blue", cursor: "pointer", marginLeft: "5px" }}
             >

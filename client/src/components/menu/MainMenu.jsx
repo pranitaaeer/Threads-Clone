@@ -2,10 +2,9 @@ import { Menu, MenuItem } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toggleColorMode, toggleMainMenu, clearAuth } from "../../redux/slice";
-import { useLogoutMeMutation } from "../../redux/service";
+import { serviceApi,useLogoutMeMutation } from "../../redux/service";
 import { useEffect } from "react";
 import { Bounce, toast } from "react-toastify";
-
 const MainMenu = () => {
   const { anchorE1, myInfo } = useSelector((state) => state.service);
   const navigate = useNavigate();
@@ -31,6 +30,8 @@ const MainMenu = () => {
       // Clear Redux state
       dispatch(clearAuth());
       
+      dispatch(serviceApi.util.resetApiState());
+
       // Optionally clear localStorage if you store token there
       localStorage.removeItem('token');
       

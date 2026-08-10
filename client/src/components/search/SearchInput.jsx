@@ -8,23 +8,27 @@ import { Bounce, toast } from "react-toastify";
 
 const SearchInput = () => {
   const { darkMode } = useSelector((state) => state.service);
-
-  const [query, setQuery] = useState();
-
+  const [query, setQuery] = useState("");
   const [searchUser, searchUserData] = useLazySearchUsersQuery();
-
   const dispatch = useDispatch();
 
-  const handleSearch = async (e) => {
-    if (query && e.key === "Enter") {
-      await searchUser(query);
-    }
-  };
-
   useEffect(() => {
-    if (searchUserData.isSuccess) {
+    const timer = setTimeout(() => {
+      if (query.trim() !== "") {
+        searchUser(query);
+      }
+    }, 500); 
+
+    return () => clearTimeout(timer);
+  }, [query, searchUser]);
+
+  // Handle API Response
+  useEffect(() => {
+    if (searchUserData.isSuccess && searchUserData.data) {
       dispatch(addToSearchedUsers(searchUserData.data.users));
-      toast.success(searchUserData.data.msg, {
+    }
+    if (searchUserData.isError && searchUserData.error) {
+      toast.error(searchUserData.error.data?.msg || "Something went wrong", {
         position: "top-center",
         autoClose: 2500,
         hideProgressBar: false,
@@ -35,19 +39,7 @@ const SearchInput = () => {
         transition: Bounce,
       });
     }
-    if (searchUserData.isError) {
-      toast.success(searchUserData.error.data.msg, {
-        position: "top-center",
-        autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        transition: Bounce,
-      });
-    }
-  }, [searchUserData.isSuccess, searchUserData.isError]);
+  }, [searchUserData.isSuccess, searchUserData.isError, searchUserData.data, searchUserData.error, dispatch]);
 
   return (
     <>
@@ -69,6 +61,7 @@ const SearchInput = () => {
           },
         }}
         placeholder="search user..."
+        value={query}
         InputProps={{
           startAdornment: (
             <InputAdornment
@@ -80,9 +73,9 @@ const SearchInput = () => {
           ),
         }}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyUp={handleSearch}
       />
     </>
   );
 };
+
 export default SearchInput;

@@ -7,12 +7,12 @@ export const serviceSlice = createSlice({
     openEditProfileModal: false,
     anchorE1: null,
     anchorE2: null,
-    darkMode: false,
     myInfo: null,
     user: {},
     allPosts: [],
     postId: null,
     searchedUsers: [],
+    darkMode: localStorage.getItem("darkMode") === "true",
   },
   reducers: {
     addPostModal: (state, action) => {
@@ -29,6 +29,7 @@ export const serviceSlice = createSlice({
     },
     toggleColorMode: (state) => {
       state.darkMode = !state.darkMode;
+      localStorage.setItem("darkMode", state.darkMode);
     },
     addMyInfo: (state, action) => {
       state.myInfo = action.payload.me;
