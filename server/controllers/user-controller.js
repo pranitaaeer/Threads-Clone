@@ -37,13 +37,11 @@ exports.signin = async (req, res) => {
     if (!accesToken) {
       return res.status(400).json({ msg: "Error while generating token !" });
     }
-    res.cookie("token", accesToken, {
+    res.cookie("token", accessToken, {
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
-      secure: false, 
-      sameSite: "lax", 
-      // partitioned: true,
-
+      secure: true,
+      sameSite: "none",
     });
     res
       .status(201)
@@ -76,12 +74,11 @@ exports.login = async (req, res) => {
     if (!accessToken) {
       return res.status(400).json({ msg: "Token not gemnerated in login !" });
     }
-   res.cookie("token", accessToken, {
+    res.cookie("token", accessToken, {
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
-      secure: false, 
-      sameSite: "lax", 
-      // partitioned: true,
+      secure: true,
+      sameSite: "none",
     });
     res.status(200).json({ msg: "User logged in succcessfully !" });
   } catch (err) {
@@ -229,7 +226,7 @@ exports.logout = async (req, res) => {
 
 exports.myInfo = async (req, res) => {
   try {
-    console.log("user:",req.user);
+    console.log("user:", req.user);
     res.status(200).json({ me: req.user });
   } catch (err) {
     res.status(400).json({ msg: "Error in myInfo !" });
