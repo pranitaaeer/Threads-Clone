@@ -11,7 +11,7 @@ const askGroq = async (systemPrompt, userMessage) => {
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage }
       ],
-      model: "llama-3.3-70b-versatile",  // ✅ Free model with 14,400 requests/day
+      model: "openai/gpt-oss-20b",  // ✅ Free model with 14,400 requests/day
       temperature: 0.7,
       max_tokens: 500,
     });
